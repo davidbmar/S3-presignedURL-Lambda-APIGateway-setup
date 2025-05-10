@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Audio Upload Demo</title>
+</head>
+<body>
+  <h1>Upload Audio to S3 via Pre-Signed URL</h1>
+
+  <input type="file" id="fileInput" accept="audio/*" />
+  <button id="uploadBtn" disabled>Upload</button>
+
+  <p id="status"></p>
+
+  <script>
+    const apiBase = 'https://<YOUR_API_ID>.execute-api.us-east-1.amazonaws.com/dev';
+
+    async function getPresignedUrl(file) {
+      const ext = file.name.split('.').pop().toLowerCase();
+      const res = await fetch(`${apiBase}/generate-upload-url`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fileExt: ext,
+          contentType: file.type
+        })
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || 'Failed to get presigned URL');
+      }
+      return res.json(); // { uploadUrl, key }
+    }
+
+    async function uploadFile(file) {
+      document.getElementById('status').textContent = 'Requesting upload URL…';
+      const { uploadUrl, key } = await getPresignedUrl(file);
+
+      document.getElementById('status').textContent = 'Uploading file…';
+      const uploadRes = await fetch(uploadUrl, {
+        method: 'PUT',
+        headers: { 'Content-Type': file.type },
+        body: file
+      });
+      if (!uploadRes.ok) {
+        throw new Error('Upload failed');
+      }
+      document.getElementById('status').textContent =
+        `✅ Upload successful! File stored at key: ${key}`;
+    }
+
+    const input = document.getElementById('fileInput');
+    const btn   = document.getElementById('uploadBtn');
+    const status = document.getElementById('status');
+
+    input.addEventListener('change', () => {
+      btn.disabled = !input.files.length;
+      status.textContent = '';
+    });
+
+    btn.addEventListener('click', async () => {
+      try {
+        await uploadFile(input.files[0]);
+      } catch (e) {
+        status.textContent = '❌ ' + e.message;
+      }
+    });
+  </script>
+</body>
+</html>
+
