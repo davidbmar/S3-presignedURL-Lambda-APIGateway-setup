@@ -1,0 +1,1047 @@
+{
+  "/Users/dmar/src/s3-presigned-apigateway-lambda/serverless.yml": {
+    "versionFramework": "4.14.3",
+    "servicePath": "/Users/dmar/src/s3-presigned-apigateway-lambda/serverless.yml",
+    "serviceConfigFileName": "serverless.yml",
+    "service": {
+      "service": "s3-presigned-apigateway-lambda",
+      "frameworkVersion": "4",
+      "provider": {
+        "name": "aws",
+        "runtime": "nodejs20.x",
+        "region": "us-east-2",
+        "stage": "dev",
+        "environment": {
+          "BUCKET_NAME": "s3-presigned-apigateway-lambda-dev-uploads"
+        },
+        "iamRoleStatements": [
+          {
+            "Effect": "Allow",
+            "Action": [
+              "s3:PutObject"
+            ],
+            "Resource": "arn:aws:s3:::s3-presigned-apigateway-lambda-dev-uploads/*"
+          }
+        ],
+        "versionFunctions": true,
+        "compiledCloudFormationTemplate": {
+          "AWSTemplateFormatVersion": "2010-09-09",
+          "Description": "The AWS CloudFormation template for this Serverless application",
+          "Resources": {
+            "UrlSignerLogGroup": {
+              "Type": "AWS::Logs::LogGroup",
+              "Properties": {
+                "LogGroupName": "/aws/lambda/s3-presigned-apigateway-lambda-dev-urlSigner"
+              }
+            },
+            "IamRoleLambdaExecution": {
+              "Type": "AWS::IAM::Role",
+              "Properties": {
+                "AssumeRolePolicyDocument": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Principal": {
+                        "Service": [
+                          "lambda.amazonaws.com"
+                        ]
+                      },
+                      "Action": [
+                        "sts:AssumeRole"
+                      ]
+                    }
+                  ]
+                },
+                "Policies": [
+                  {
+                    "PolicyName": {
+                      "Fn::Join": [
+                        "-",
+                        [
+                          "s3-presigned-apigateway-lambda",
+                          "dev",
+                          "lambda"
+                        ]
+                      ]
+                    },
+                    "PolicyDocument": {
+                      "Version": "2012-10-17",
+                      "Statement": [
+                        {
+                          "Effect": "Allow",
+                          "Action": [
+                            "logs:CreateLogStream",
+                            "logs:CreateLogGroup",
+                            "logs:TagResource"
+                          ],
+                          "Resource": [
+                            {
+                              "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/s3-presigned-apigateway-lambda-dev*:*"
+                            }
+                          ]
+                        },
+                        {
+                          "Effect": "Allow",
+                          "Action": [
+                            "logs:PutLogEvents"
+                          ],
+                          "Resource": [
+                            {
+                              "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/s3-presigned-apigateway-lambda-dev*:*:*"
+                            }
+                          ]
+                        },
+                        {
+                          "Effect": "Allow",
+                          "Action": [
+                            "s3:PutObject"
+                          ],
+                          "Resource": "arn:aws:s3:::s3-presigned-apigateway-lambda-dev-uploads/*"
+                        }
+                      ]
+                    }
+                  }
+                ],
+                "Path": "/",
+                "RoleName": {
+                  "Fn::Join": [
+                    "-",
+                    [
+                      "s3-presigned-apigateway-lambda",
+                      "dev",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      "lambdaRole"
+                    ]
+                  ]
+                }
+              }
+            },
+            "UrlSignerLambdaFunction": {
+              "Type": "AWS::Lambda::Function",
+              "Properties": {
+                "Code": {
+                  "S3Bucket": "serverless-framework-deployments-us-east-2-0240b03c-f012",
+                  "S3Key": "serverless/s3-presigned-apigateway-lambda/dev/1746930938823-2025-05-11T02:35:38.823Z/s3-presigned-apigateway-lambda.zip"
+                },
+                "Handler": "src/urlSigner.handler",
+                "Runtime": "nodejs20.x",
+                "FunctionName": "s3-presigned-apigateway-lambda-dev-urlSigner",
+                "MemorySize": 128,
+                "Timeout": 5,
+                "Environment": {
+                  "Variables": {
+                    "BUCKET_NAME": "s3-presigned-apigateway-lambda-dev-uploads"
+                  }
+                },
+                "Role": {
+                  "Fn::GetAtt": [
+                    "IamRoleLambdaExecution",
+                    "Arn"
+                  ]
+                }
+              },
+              "DependsOn": [
+                "UrlSignerLogGroup"
+              ]
+            },
+            "UrlSignerLambdaVersion899yuJJgs5bBmGHcfL1JJeE8bxntuDl9DcZNzVoxAk": {
+              "Type": "AWS::Lambda::Version",
+              "DeletionPolicy": "Retain",
+              "Properties": {
+                "FunctionName": {
+                  "Ref": "UrlSignerLambdaFunction"
+                },
+                "CodeSha256": "ZKExj2V9IHq+ZeuJLqZvvKceVis3axU7Q+WR1xT/Jl8="
+              }
+            },
+            "HttpApi": {
+              "Type": "AWS::ApiGatewayV2::Api",
+              "Properties": {
+                "Name": "dev-s3-presigned-apigateway-lambda",
+                "ProtocolType": "HTTP"
+              }
+            },
+            "HttpApiStage": {
+              "Type": "AWS::ApiGatewayV2::Stage",
+              "Properties": {
+                "ApiId": {
+                  "Ref": "HttpApi"
+                },
+                "StageName": "$default",
+                "AutoDeploy": true,
+                "DefaultRouteSettings": {
+                  "DetailedMetricsEnabled": false
+                }
+              }
+            },
+            "UrlSignerLambdaPermissionHttpApi": {
+              "Type": "AWS::Lambda::Permission",
+              "Properties": {
+                "FunctionName": {
+                  "Fn::GetAtt": [
+                    "UrlSignerLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "Action": "lambda:InvokeFunction",
+                "Principal": "apigateway.amazonaws.com",
+                "SourceArn": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition"
+                      },
+                      ":execute-api:",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      ":",
+                      {
+                        "Ref": "AWS::AccountId"
+                      },
+                      ":",
+                      {
+                        "Ref": "HttpApi"
+                      },
+                      "/*"
+                    ]
+                  ]
+                }
+              }
+            },
+            "HttpApiIntegrationUrlSigner": {
+              "Type": "AWS::ApiGatewayV2::Integration",
+              "Properties": {
+                "ApiId": {
+                  "Ref": "HttpApi"
+                },
+                "IntegrationType": "AWS_PROXY",
+                "IntegrationUri": {
+                  "Fn::GetAtt": [
+                    "UrlSignerLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "PayloadFormatVersion": "2.0",
+                "TimeoutInMillis": 30000
+              }
+            },
+            "HttpApiRoutePostGenerateDashuploadDashurl": {
+              "Type": "AWS::ApiGatewayV2::Route",
+              "Properties": {
+                "ApiId": {
+                  "Ref": "HttpApi"
+                },
+                "RouteKey": "POST /generate-upload-url",
+                "Target": {
+                  "Fn::Join": [
+                    "/",
+                    [
+                      "integrations",
+                      {
+                        "Ref": "HttpApiIntegrationUrlSigner"
+                      }
+                    ]
+                  ]
+                }
+              },
+              "DependsOn": "HttpApiIntegrationUrlSigner"
+            },
+            "UploadBucket": {
+              "Type": "AWS::S3::Bucket",
+              "Properties": {
+                "BucketName": "s3-presigned-apigateway-lambda-dev-uploads",
+                "OwnershipControls": {
+                  "Rules": [
+                    {
+                      "ObjectOwnership": "BucketOwnerEnforced"
+                    }
+                  ]
+                },
+                "PublicAccessBlockConfiguration": {
+                  "BlockPublicAcls": true,
+                  "BlockPublicPolicy": true,
+                  "IgnorePublicAcls": true,
+                  "RestrictPublicBuckets": true
+                }
+              }
+            }
+          },
+          "Outputs": {
+            "ServerlessDeploymentBucketName": {
+              "Value": "serverless-framework-deployments-us-east-2-0240b03c-f012",
+              "Export": {
+                "Name": "sls-s3-presigned-apigateway-lambda-dev-ServerlessDeploymentBucketName"
+              }
+            },
+            "UrlSignerLambdaFunctionQualifiedArn": {
+              "Description": "Current Lambda function version",
+              "Value": {
+                "Ref": "UrlSignerLambdaVersion899yuJJgs5bBmGHcfL1JJeE8bxntuDl9DcZNzVoxAk"
+              },
+              "Export": {
+                "Name": "sls-s3-presigned-apigateway-lambda-dev-UrlSignerLambdaFunctionQualifiedArn"
+              }
+            },
+            "HttpApiId": {
+              "Description": "Id of the HTTP API",
+              "Value": {
+                "Ref": "HttpApi"
+              },
+              "Export": {
+                "Name": "sls-s3-presigned-apigateway-lambda-dev-HttpApiId"
+              }
+            },
+            "HttpApiUrl": {
+              "Description": "URL of the HTTP API",
+              "Value": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "https://",
+                    {
+                      "Ref": "HttpApi"
+                    },
+                    ".execute-api.",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ".",
+                    {
+                      "Ref": "AWS::URLSuffix"
+                    }
+                  ]
+                ]
+              },
+              "Export": {
+                "Name": "sls-s3-presigned-apigateway-lambda-dev-HttpApiUrl"
+              }
+            }
+          }
+        },
+        "vpc": {}
+      },
+      "functions": {
+        "urlSigner": {
+          "handler": "src/urlSigner.handler",
+          "memorySize": 128,
+          "timeout": 5,
+          "events": [
+            {
+              "httpApi": {
+                "path": "/generate-upload-url",
+                "method": "POST"
+              },
+              "resolvedMethod": "POST",
+              "resolvedPath": "/generate-upload-url"
+            }
+          ],
+          "name": "s3-presigned-apigateway-lambda-dev-urlSigner",
+          "package": {},
+          "memory": 128,
+          "runtime": "nodejs20.x",
+          "vpc": {},
+          "versionLogicalId": "UrlSignerLambdaVersion899yuJJgs5bBmGHcfL1JJeE8bxntuDl9DcZNzVoxAk"
+        }
+      },
+      "resources": {
+        "Resources": {
+          "UploadBucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+              "BucketName": "s3-presigned-apigateway-lambda-dev-uploads",
+              "OwnershipControls": {
+                "Rules": [
+                  {
+                    "ObjectOwnership": "BucketOwnerEnforced"
+                  }
+                ]
+              },
+              "PublicAccessBlockConfiguration": {
+                "BlockPublicAcls": true,
+                "BlockPublicPolicy": true,
+                "IgnorePublicAcls": true,
+                "RestrictPublicBuckets": true
+              }
+            }
+          }
+        },
+        "Outputs": {}
+      }
+    },
+    "provider": {
+      "name": "aws",
+      "runtime": "nodejs20.x",
+      "region": "us-east-2",
+      "stage": "dev",
+      "environment": {
+        "BUCKET_NAME": "s3-presigned-apigateway-lambda-dev-uploads"
+      },
+      "iamRoleStatements": [
+        {
+          "Effect": "Allow",
+          "Action": [
+            "s3:PutObject"
+          ],
+          "Resource": "arn:aws:s3:::s3-presigned-apigateway-lambda-dev-uploads/*"
+        }
+      ],
+      "versionFunctions": true,
+      "compiledCloudFormationTemplate": {
+        "AWSTemplateFormatVersion": "2010-09-09",
+        "Description": "The AWS CloudFormation template for this Serverless application",
+        "Resources": {
+          "UrlSignerLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/s3-presigned-apigateway-lambda-dev-urlSigner"
+            }
+          },
+          "IamRoleLambdaExecution": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+              "AssumeRolePolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Effect": "Allow",
+                    "Principal": {
+                      "Service": [
+                        "lambda.amazonaws.com"
+                      ]
+                    },
+                    "Action": [
+                      "sts:AssumeRole"
+                    ]
+                  }
+                ]
+              },
+              "Policies": [
+                {
+                  "PolicyName": {
+                    "Fn::Join": [
+                      "-",
+                      [
+                        "s3-presigned-apigateway-lambda",
+                        "dev",
+                        "lambda"
+                      ]
+                    ]
+                  },
+                  "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                      {
+                        "Effect": "Allow",
+                        "Action": [
+                          "logs:CreateLogStream",
+                          "logs:CreateLogGroup",
+                          "logs:TagResource"
+                        ],
+                        "Resource": [
+                          {
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/s3-presigned-apigateway-lambda-dev*:*"
+                          }
+                        ]
+                      },
+                      {
+                        "Effect": "Allow",
+                        "Action": [
+                          "logs:PutLogEvents"
+                        ],
+                        "Resource": [
+                          {
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/s3-presigned-apigateway-lambda-dev*:*:*"
+                          }
+                        ]
+                      },
+                      {
+                        "Effect": "Allow",
+                        "Action": [
+                          "s3:PutObject"
+                        ],
+                        "Resource": "arn:aws:s3:::s3-presigned-apigateway-lambda-dev-uploads/*"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "Path": "/",
+              "RoleName": {
+                "Fn::Join": [
+                  "-",
+                  [
+                    "s3-presigned-apigateway-lambda",
+                    "dev",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    "lambdaRole"
+                  ]
+                ]
+              }
+            }
+          },
+          "UrlSignerLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": "serverless-framework-deployments-us-east-2-0240b03c-f012",
+                "S3Key": "serverless/s3-presigned-apigateway-lambda/dev/1746930938823-2025-05-11T02:35:38.823Z/s3-presigned-apigateway-lambda.zip"
+              },
+              "Handler": "src/urlSigner.handler",
+              "Runtime": "nodejs20.x",
+              "FunctionName": "s3-presigned-apigateway-lambda-dev-urlSigner",
+              "MemorySize": 128,
+              "Timeout": 5,
+              "Environment": {
+                "Variables": {
+                  "BUCKET_NAME": "s3-presigned-apigateway-lambda-dev-uploads"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "UrlSignerLogGroup"
+            ]
+          },
+          "UrlSignerLambdaVersion899yuJJgs5bBmGHcfL1JJeE8bxntuDl9DcZNzVoxAk": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "UrlSignerLambdaFunction"
+              },
+              "CodeSha256": "ZKExj2V9IHq+ZeuJLqZvvKceVis3axU7Q+WR1xT/Jl8="
+            }
+          },
+          "HttpApi": {
+            "Type": "AWS::ApiGatewayV2::Api",
+            "Properties": {
+              "Name": "dev-s3-presigned-apigateway-lambda",
+              "ProtocolType": "HTTP"
+            }
+          },
+          "HttpApiStage": {
+            "Type": "AWS::ApiGatewayV2::Stage",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "StageName": "$default",
+              "AutoDeploy": true,
+              "DefaultRouteSettings": {
+                "DetailedMetricsEnabled": false
+              }
+            }
+          },
+          "UrlSignerLambdaPermissionHttpApi": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "UrlSignerLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "HttpApi"
+                    },
+                    "/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "HttpApiIntegrationUrlSigner": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "Fn::GetAtt": [
+                  "UrlSignerLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "PayloadFormatVersion": "2.0",
+              "TimeoutInMillis": 30000
+            }
+          },
+          "HttpApiRoutePostGenerateDashuploadDashurl": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "RouteKey": "POST /generate-upload-url",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "HttpApiIntegrationUrlSigner"
+                    }
+                  ]
+                ]
+              }
+            },
+            "DependsOn": "HttpApiIntegrationUrlSigner"
+          },
+          "UploadBucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+              "BucketName": "s3-presigned-apigateway-lambda-dev-uploads",
+              "OwnershipControls": {
+                "Rules": [
+                  {
+                    "ObjectOwnership": "BucketOwnerEnforced"
+                  }
+                ]
+              },
+              "PublicAccessBlockConfiguration": {
+                "BlockPublicAcls": true,
+                "BlockPublicPolicy": true,
+                "IgnorePublicAcls": true,
+                "RestrictPublicBuckets": true
+              }
+            }
+          }
+        },
+        "Outputs": {
+          "ServerlessDeploymentBucketName": {
+            "Value": "serverless-framework-deployments-us-east-2-0240b03c-f012",
+            "Export": {
+              "Name": "sls-s3-presigned-apigateway-lambda-dev-ServerlessDeploymentBucketName"
+            }
+          },
+          "UrlSignerLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "UrlSignerLambdaVersion899yuJJgs5bBmGHcfL1JJeE8bxntuDl9DcZNzVoxAk"
+            },
+            "Export": {
+              "Name": "sls-s3-presigned-apigateway-lambda-dev-UrlSignerLambdaFunctionQualifiedArn"
+            }
+          },
+          "HttpApiId": {
+            "Description": "Id of the HTTP API",
+            "Value": {
+              "Ref": "HttpApi"
+            },
+            "Export": {
+              "Name": "sls-s3-presigned-apigateway-lambda-dev-HttpApiId"
+            }
+          },
+          "HttpApiUrl": {
+            "Description": "URL of the HTTP API",
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  "https://",
+                  {
+                    "Ref": "HttpApi"
+                  },
+                  ".execute-api.",
+                  {
+                    "Ref": "AWS::Region"
+                  },
+                  ".",
+                  {
+                    "Ref": "AWS::URLSuffix"
+                  }
+                ]
+              ]
+            },
+            "Export": {
+              "Name": "sls-s3-presigned-apigateway-lambda-dev-HttpApiUrl"
+            }
+          }
+        }
+      },
+      "vpc": {}
+    },
+    "dashboard": {
+      "isEnabledForService": false,
+      "requiredAuthentication": false,
+      "orgFeaturesInUse": null,
+      "orgObservabilityIntegrations": null,
+      "serviceAppId": null,
+      "serviceProvider": null,
+      "instanceParameters": null
+    },
+    "serviceRawFile": "service: s3-presigned-apigateway-lambda\nframeworkVersion: '4'\n\nprovider:\n  name: aws\n  runtime: nodejs20.x\n  region: us-east-2\n  stage: dev\n  environment:\n    BUCKET_NAME: ${self:service}-${self:provider.stage}-uploads\n  iamRoleStatements:\n    - Effect: Allow\n      Action: s3:PutObject\n      Resource:\n        - arn:aws:s3:::${self:provider.environment.BUCKET_NAME}/*\n\nfunctions:\n  urlSigner:\n    handler: src/urlSigner.handler\n    memorySize: 128\n    timeout: 5\n    events:\n      - httpApi:\n          path: /generate-upload-url\n          method: POST\n\nresources:\n  Resources:\n    UploadBucket:\n      Type: AWS::S3::Bucket\n      Properties:\n        BucketName: ${self:provider.environment.BUCKET_NAME}\n        OwnershipControls:\n          Rules:\n            - ObjectOwnership: BucketOwnerEnforced\n        PublicAccessBlockConfiguration:\n          BlockPublicAcls: true\n          BlockPublicPolicy: true\n          IgnorePublicAcls: true\n          RestrictPublicBuckets: true\n\n",
+    "command": [
+      "deploy"
+    ],
+    "options": {},
+    "orgId": "3b6f754e-9f2f-4438-bdb3-91f3237d5c97",
+    "orgName": "rewardie",
+    "userId": "vGttx69xhVdP3TpbMC",
+    "userName": "rewardie",
+    "serviceProviderAwsAccountId": "821850226835",
+    "serviceProviderAwsCfStackName": "s3-presigned-apigateway-lambda-dev",
+    "serviceProviderAwsCfStackId": "arn:aws:cloudformation:us-east-2:821850226835:stack/s3-presigned-apigateway-lambda-dev/4481a8a0-2df9-11f0-88bb-029dc5aa8c0f",
+    "serviceProviderAwsCfStackCreated": "2025-05-10T23:48:26.941Z",
+    "serviceProviderAwsCfStackUpdated": "2025-05-11T02:31:53.801Z",
+    "serviceProviderAwsCfStackStatus": "UPDATE_COMPLETE",
+    "serviceProviderAwsCfStackOutputs": [
+      {
+        "OutputKey": "HttpApiId",
+        "OutputValue": "52lhokd2rf",
+        "Description": "Id of the HTTP API",
+        "ExportName": "sls-s3-presigned-apigateway-lambda-dev-HttpApiId"
+      },
+      {
+        "OutputKey": "UrlSignerLambdaFunctionQualifiedArn",
+        "OutputValue": "arn:aws:lambda:us-east-2:821850226835:function:s3-presigned-apigateway-lambda-dev-urlSigner:2",
+        "Description": "Current Lambda function version",
+        "ExportName": "sls-s3-presigned-apigateway-lambda-dev-UrlSignerLambdaFunctionQualifiedArn"
+      },
+      {
+        "OutputKey": "ServerlessDeploymentBucketName",
+        "OutputValue": "serverless-framework-deployments-us-east-2-0240b03c-f012",
+        "ExportName": "sls-s3-presigned-apigateway-lambda-dev-ServerlessDeploymentBucketName"
+      },
+      {
+        "OutputKey": "HttpApiUrl",
+        "OutputValue": "https://52lhokd2rf.execute-api.us-east-2.amazonaws.com",
+        "Description": "URL of the HTTP API",
+        "ExportName": "sls-s3-presigned-apigateway-lambda-dev-HttpApiUrl"
+      }
+    ],
+    "compiledCloudFormationTemplate": {
+      "AWSTemplateFormatVersion": "2010-09-09",
+      "Description": "The AWS CloudFormation template for this Serverless application",
+      "Resources": {
+        "UrlSignerLogGroup": {
+          "Type": "AWS::Logs::LogGroup",
+          "Properties": {
+            "LogGroupName": "/aws/lambda/s3-presigned-apigateway-lambda-dev-urlSigner"
+          }
+        },
+        "IamRoleLambdaExecution": {
+          "Type": "AWS::IAM::Role",
+          "Properties": {
+            "AssumeRolePolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": [
+                      "lambda.amazonaws.com"
+                    ]
+                  },
+                  "Action": [
+                    "sts:AssumeRole"
+                  ]
+                }
+              ]
+            },
+            "Policies": [
+              {
+                "PolicyName": {
+                  "Fn::Join": [
+                    "-",
+                    [
+                      "s3-presigned-apigateway-lambda",
+                      "dev",
+                      "lambda"
+                    ]
+                  ]
+                },
+                "PolicyDocument": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Action": [
+                        "logs:CreateLogStream",
+                        "logs:CreateLogGroup",
+                        "logs:TagResource"
+                      ],
+                      "Resource": [
+                        {
+                          "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/s3-presigned-apigateway-lambda-dev*:*"
+                        }
+                      ]
+                    },
+                    {
+                      "Effect": "Allow",
+                      "Action": [
+                        "logs:PutLogEvents"
+                      ],
+                      "Resource": [
+                        {
+                          "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/s3-presigned-apigateway-lambda-dev*:*:*"
+                        }
+                      ]
+                    },
+                    {
+                      "Effect": "Allow",
+                      "Action": [
+                        "s3:PutObject"
+                      ],
+                      "Resource": "arn:aws:s3:::s3-presigned-apigateway-lambda-dev-uploads/*"
+                    }
+                  ]
+                }
+              }
+            ],
+            "Path": "/",
+            "RoleName": {
+              "Fn::Join": [
+                "-",
+                [
+                  "s3-presigned-apigateway-lambda",
+                  "dev",
+                  {
+                    "Ref": "AWS::Region"
+                  },
+                  "lambdaRole"
+                ]
+              ]
+            }
+          }
+        },
+        "UrlSignerLambdaFunction": {
+          "Type": "AWS::Lambda::Function",
+          "Properties": {
+            "Code": {
+              "S3Bucket": "serverless-framework-deployments-us-east-2-0240b03c-f012",
+              "S3Key": "serverless/s3-presigned-apigateway-lambda/dev/1746930938823-2025-05-11T02:35:38.823Z/s3-presigned-apigateway-lambda.zip"
+            },
+            "Handler": "src/urlSigner.handler",
+            "Runtime": "nodejs20.x",
+            "FunctionName": "s3-presigned-apigateway-lambda-dev-urlSigner",
+            "MemorySize": 128,
+            "Timeout": 5,
+            "Environment": {
+              "Variables": {
+                "BUCKET_NAME": "s3-presigned-apigateway-lambda-dev-uploads"
+              }
+            },
+            "Role": {
+              "Fn::GetAtt": [
+                "IamRoleLambdaExecution",
+                "Arn"
+              ]
+            }
+          },
+          "DependsOn": [
+            "UrlSignerLogGroup"
+          ]
+        },
+        "UrlSignerLambdaVersion899yuJJgs5bBmGHcfL1JJeE8bxntuDl9DcZNzVoxAk": {
+          "Type": "AWS::Lambda::Version",
+          "DeletionPolicy": "Retain",
+          "Properties": {
+            "FunctionName": {
+              "Ref": "UrlSignerLambdaFunction"
+            },
+            "CodeSha256": "ZKExj2V9IHq+ZeuJLqZvvKceVis3axU7Q+WR1xT/Jl8="
+          }
+        },
+        "HttpApi": {
+          "Type": "AWS::ApiGatewayV2::Api",
+          "Properties": {
+            "Name": "dev-s3-presigned-apigateway-lambda",
+            "ProtocolType": "HTTP"
+          }
+        },
+        "HttpApiStage": {
+          "Type": "AWS::ApiGatewayV2::Stage",
+          "Properties": {
+            "ApiId": {
+              "Ref": "HttpApi"
+            },
+            "StageName": "$default",
+            "AutoDeploy": true,
+            "DefaultRouteSettings": {
+              "DetailedMetricsEnabled": false
+            }
+          }
+        },
+        "UrlSignerLambdaPermissionHttpApi": {
+          "Type": "AWS::Lambda::Permission",
+          "Properties": {
+            "FunctionName": {
+              "Fn::GetAtt": [
+                "UrlSignerLambdaFunction",
+                "Arn"
+              ]
+            },
+            "Action": "lambda:InvokeFunction",
+            "Principal": "apigateway.amazonaws.com",
+            "SourceArn": {
+              "Fn::Join": [
+                "",
+                [
+                  "arn:",
+                  {
+                    "Ref": "AWS::Partition"
+                  },
+                  ":execute-api:",
+                  {
+                    "Ref": "AWS::Region"
+                  },
+                  ":",
+                  {
+                    "Ref": "AWS::AccountId"
+                  },
+                  ":",
+                  {
+                    "Ref": "HttpApi"
+                  },
+                  "/*"
+                ]
+              ]
+            }
+          }
+        },
+        "HttpApiIntegrationUrlSigner": {
+          "Type": "AWS::ApiGatewayV2::Integration",
+          "Properties": {
+            "ApiId": {
+              "Ref": "HttpApi"
+            },
+            "IntegrationType": "AWS_PROXY",
+            "IntegrationUri": {
+              "Fn::GetAtt": [
+                "UrlSignerLambdaFunction",
+                "Arn"
+              ]
+            },
+            "PayloadFormatVersion": "2.0",
+            "TimeoutInMillis": 30000
+          }
+        },
+        "HttpApiRoutePostGenerateDashuploadDashurl": {
+          "Type": "AWS::ApiGatewayV2::Route",
+          "Properties": {
+            "ApiId": {
+              "Ref": "HttpApi"
+            },
+            "RouteKey": "POST /generate-upload-url",
+            "Target": {
+              "Fn::Join": [
+                "/",
+                [
+                  "integrations",
+                  {
+                    "Ref": "HttpApiIntegrationUrlSigner"
+                  }
+                ]
+              ]
+            }
+          },
+          "DependsOn": "HttpApiIntegrationUrlSigner"
+        },
+        "UploadBucket": {
+          "Type": "AWS::S3::Bucket",
+          "Properties": {
+            "BucketName": "s3-presigned-apigateway-lambda-dev-uploads",
+            "OwnershipControls": {
+              "Rules": [
+                {
+                  "ObjectOwnership": "BucketOwnerEnforced"
+                }
+              ]
+            },
+            "PublicAccessBlockConfiguration": {
+              "BlockPublicAcls": true,
+              "BlockPublicPolicy": true,
+              "IgnorePublicAcls": true,
+              "RestrictPublicBuckets": true
+            }
+          }
+        }
+      },
+      "Outputs": {
+        "ServerlessDeploymentBucketName": {
+          "Value": "serverless-framework-deployments-us-east-2-0240b03c-f012",
+          "Export": {
+            "Name": "sls-s3-presigned-apigateway-lambda-dev-ServerlessDeploymentBucketName"
+          }
+        },
+        "UrlSignerLambdaFunctionQualifiedArn": {
+          "Description": "Current Lambda function version",
+          "Value": {
+            "Ref": "UrlSignerLambdaVersion899yuJJgs5bBmGHcfL1JJeE8bxntuDl9DcZNzVoxAk"
+          },
+          "Export": {
+            "Name": "sls-s3-presigned-apigateway-lambda-dev-UrlSignerLambdaFunctionQualifiedArn"
+          }
+        },
+        "HttpApiId": {
+          "Description": "Id of the HTTP API",
+          "Value": {
+            "Ref": "HttpApi"
+          },
+          "Export": {
+            "Name": "sls-s3-presigned-apigateway-lambda-dev-HttpApiId"
+          }
+        },
+        "HttpApiUrl": {
+          "Description": "URL of the HTTP API",
+          "Value": {
+            "Fn::Join": [
+              "",
+              [
+                "https://",
+                {
+                  "Ref": "HttpApi"
+                },
+                ".execute-api.",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ".",
+                {
+                  "Ref": "AWS::URLSuffix"
+                }
+              ]
+            ]
+          },
+          "Export": {
+            "Name": "sls-s3-presigned-apigateway-lambda-dev-HttpApiUrl"
+          }
+        }
+      }
+    }
+  }
+}
