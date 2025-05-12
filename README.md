@@ -70,8 +70,12 @@ Ensure you have:
 4. **Smoke-test**:
 
    ```bash
-   export API_URL=$(serverless info --verbose \
-     | grep POST | awk '{print $3}')
+   export API_URL=$(
+  serverless info --verbose 2>&1 \
+    | grep 'endpoint: POST' \
+    | awk '{print $4}'
+)
+   
    curl -X POST "$API_URL/generate-upload-url" \
      -H "Content-Type: application/json" \
      -d '{"fileExt":"wav","contentType":"audio/wav"}'
