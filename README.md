@@ -71,12 +71,10 @@ Ensure you have:
 
    ```bash
    export API_URL=$(
-  serverless info --verbose 2>&1 \
-    | grep 'endpoint: POST' \
-    | awk '{print $4}'
-)
-
-   
+     serverless info --verbose 2>&1 \
+     | grep 'endpoint: POST' \
+     | awk '{print $4}'
+   )
    curl -X POST "$API_URL/generate-upload-url" \
      -H "Content-Type: application/json" \
      -d '{"fileExt":"wav","contentType":"audio/wav"}'
