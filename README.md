@@ -75,6 +75,7 @@ Ensure you have:
     | grep 'endpoint: POST' \
     | awk '{print $4}'
 )
+
    
    curl -X POST "$API_URL/generate-upload-url" \
      -H "Content-Type: application/json" \
